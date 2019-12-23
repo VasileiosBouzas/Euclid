@@ -45,25 +45,21 @@ class Point(ABC):
         if self.dim != other.dim:
             raise InvalidOperation("The point dimensions are not equal")
 
-    def add(self, other):
+    @abstractmethod
+    def __add__(self, other):
         self.check_operation(other)
         return [sc + oc for sc, oc in zip(self.coords, other.coords)]
 
     @abstractmethod
-    def __add__(self, other):
-        pass
-
-    def sub(self, other):
+    def __sub__(self, other):
         self.check_operation(other)
         return [sc - oc for sc, oc in zip(self.coords, other.coords)]
 
     @abstractmethod
-    def __sub__(self, other):
-        pass
-
-    @abstractmethod
     def translate(self, *translation):
-        pass
+        if len(translation) != self.dim:
+            raise InvalidOperation("Invalid translation")
+        return [sc + tc for sc, tc in zip(self.coords, translation)]
 
 
 class Point2D(Point):
@@ -86,11 +82,7 @@ class Point2D(Point):
         return Point2D(*self.sub(other))
 
     def translate(self, *translation):
-        if len(translation) != self.dim:
-            raise InvalidOperation("Invalid translation")
-        dx, dy = translation
-        return self + Point2D(self.x + dx,
-                              self.y + dy)
+        return Point2D(*super().translate(*translation))
 
     def to3D(self):
         return Point3D(self.x, self.y, 0)
@@ -111,26 +103,13 @@ class Point3D(Point):
         return self.x, self.y, self.z
 
     def __add__(self, other):
-        return Point3D(*self.add(other))
+        return Point3D(*super().__add__(other))
 
     def __sub__(self, other):
-        return Point3D(*self.sub(other))
+        return Point3D(*super().__sub__(other))
 
     def translate(self, *translation):
-        if len(translation) != self.dim:
-            raise InvalidOperation("Invalid translation")
-        dx, dy, dz = translation
-        return Point3D(self.x + dx,
-                       self.y + dy,
-                       self.z + dz)
+        return Point3D(*super().translate(*translation))
 
     def to2D(self):
         return Point2D(self.x, self.y)
-
-
-p = Point3D()
-pts = []
-for i in range(10000000):
-    p.x, p.y, p.z = i, i + 1, i + 2
-    pts.append(p)
-    # point = Point3D(i, i + 1, i + 2)
